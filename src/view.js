@@ -1,0 +1,235 @@
+import ListContainer from './listContainer.js';
+
+const App = {
+    body: document.querySelector('body'),
+    sidebar: document.querySelector('.sidebar'),
+    content: document.querySelector('.content')
+}
+
+function createButton(buttonText, buttonClass, buttonFunction) {
+    let button = document.createElement('button');
+    button.textContent = buttonText;
+    button.classList.add(buttonClass);
+    button.addEventListener('click', buttonFunction);
+    return button;
+}
+
+function createInput(inputType, placeHolder, inputClass) {
+    let input = document.createElement('input');
+    input.type = inputType;
+    input.placeholder = placeHolder;
+    input.classList.add(inputClass);
+    return input;
+}
+
+function styleSideBar() {
+    App.sidebar.style.margin = '0';
+    App.sidebar.style.padding = '0';
+    App.sidebar.style.width = '300px';
+    App.sidebar.style.backgroundColor = '#2C2C2C';
+    App.sidebar.style.position = 'fixed';
+    App.sidebar.style.height = '100%';
+    App.sidebar.style.overflow = 'auto';
+}
+
+function styleContent() {
+    App.content.style.marginLeft = '250px';
+    App.content.style.padding = '1px 16px';
+    App.content.style.height = '1000px';
+}
+
+function styleListButton(listButton) {
+    listButton.style.marginBottom = '18px';
+    listButton.style.backgroundColor = '#2C2C2C';
+    listButton.style.color = 'white';
+    listButton.style.border = 'none';
+    listButton.style.cursor = 'pointer';
+    listButton.style.fontSize = '22px';
+    listButton.style.textAlign = 'left';
+    listButton.style.marginLeft = '5px';
+    listButton.style.borderBottom = '1px solid #757575';
+}
+
+function styleText(text, content, color, fontSize, textAlign) {
+    text.textContent = content;
+    text.style.color = color;
+    text.style.fontSize = fontSize;
+    text.style.textAlign = textAlign;
+}
+
+function styleInput(input) {
+    input.style.flex = '1';
+    input.style.border = 'none';
+    input.style.outline = 'none';
+    input.style.background = 'transparent';
+    input.style.padding = '10px';
+    input.style.color = 'white';
+    input.style.fontSize = '16px';
+}
+
+function styleButton(button) {
+    button.style.backgroundColor = '#de6449';
+    button.style.color = 'white';
+    button.style.border = 'none';
+    button.style.cursor = 'pointer';
+    button.style.padding = '15px';
+    // button.style.borderRadius = '10px';
+    button.style.fontSize = '24px';
+}
+
+function createGenericContentText() {
+    const genericTitle = document.createElement('h1');
+    styleText(genericTitle, 'Welcome to your To-Do List!', 'white', '45px', 'center');
+
+    const genericSubtitle = document.createElement('h2');
+    styleText(genericSubtitle, 'Add a project to get started!', 'white', '30px', 'center');
+
+    App.content.appendChild(genericTitle);
+    App.content.appendChild(genericSubtitle);
+}
+
+export default class View {
+    render(listContainer, currentList) {
+        App.body.style.backgroundColor = '#1C1C1C';
+        App.sidebar.innerHTML = '';
+        App.content.innerHTML = '';
+
+        styleSideBar();
+        styleContent();
+
+        this.renderSidebar(listContainer, currentList);
+        this.renderContent(listContainer, currentList);
+    }
+
+    renderContent(listContainer, currentList) {
+        App.content.style.display = 'flex';
+        App.content.style.flexDirection = 'column';
+        App.content.style.alignItems = 'center';
+
+        if(currentList === undefined || currentList === null) {
+            createGenericContentText();
+            return;
+        }
+        
+        const listTitle = document.createElement('h1');
+        styleText(listTitle, currentList.getTitle(), 'white', '45px', 'center');
+
+        const addTaskContainer = document.createElement('div');
+        addTaskContainer.style.display = 'flex';
+        addTaskContainer.style.justifyContent = 'center';
+        addTaskContainer.style.alignItems = 'center';
+        addTaskContainer.style.backgroundColor = '#5a5a5a';
+        addTaskContainer.style.borderRadius = '15px';
+        addTaskContainer.style.width = '25%';
+
+        let taskInput = createInput('text', 'Add your task', 'task-input');
+        styleInput(taskInput);
+        taskInput.style.fontSize = '24px';
+        taskInput.style.textAlign = 'center';
+        addTaskContainer.appendChild(taskInput);
+
+        let addTaskButton = createButton('+', 'add-task-button', () => {
+            if(taskInput.value === '') { console.log("Input Invalid"); return; }
+            let taskTitle = taskInput.value;
+            taskInput.value = '';
+            currentList.addListItem(taskTitle, '', '', 0, 0);
+            this.render(listContainer, currentList);
+        });
+        styleButton(addTaskButton);
+        addTaskButton.style.borderRadius = '15px';
+        addTaskContainer.appendChild(addTaskButton);
+
+        const taskContainer = document.createElement('div');
+        // taskContainer.style.flexDirection = 'column';
+        // taskContainer.style.display = 'flex';
+        taskContainer.style.marginTop = '30px';
+
+        const tasks = currentList.getListItems();
+
+        for(let i = 0; i < tasks.length; i++) {
+            const task = tasks[i];
+            const taskDiv = document.createElement('div');
+            taskDiv.style.backgroundColor = '#2C2C2C';
+            taskDiv.style.color = 'white';
+            taskDiv.style.background = 'transparent';
+            taskDiv.style.maxWidth = '500px';
+            taskDiv.style.overflow = 'hidden';
+            taskDiv.style.textOverflow = 'ellipsis';
+            taskDiv.style.display = 'flex';
+            taskDiv.style.marginBottom = '10px';
+
+            const taskTitle = document.createElement('h2');
+            styleText(taskTitle, task.getTitle(), 'white', '26px', 'left');
+            taskTitle.style.textDecoration = task.getStatus() === 0 ? 'none' : 'line-through';
+            taskTitle.style.color = task.getStatus() === 0 ? 'white' : '#555';
+
+            let status = task.getStatus() === 0 ? 'U' : 'D';
+            console.log(status);
+            let statusColor = task.getStatus() === 0 ? '#de6449' : '#55b761';
+            let statusButton = createButton(status, 'status-button', () => {
+                task.getStatus() === 0 ? task.setStatus(1) : task.setStatus(0);
+                this.render(listContainer, currentList);
+            });
+            styleButton(statusButton);
+            statusButton.style.backgroundColor = statusColor;
+            statusButton.style.fontSize = '24px';
+            statusButton.style.borderRadius = '30px';
+            statusButton.style.padding = '0px 25px';
+            statusButton.style.marginRight = '10px';
+
+            taskDiv.appendChild(statusButton);
+            taskDiv.appendChild(taskTitle);
+            taskContainer.appendChild(taskDiv);
+        }
+
+        App.content.appendChild(listTitle);
+        App.content.appendChild(addTaskContainer);
+        App.content.appendChild(taskContainer);
+    }
+
+    renderSidebar(listContainer, currentList) {
+        const addListContainer = document.createElement('div');
+        addListContainer.style.display = 'flex';
+        addListContainer.style.alignItems = 'center';
+        addListContainer.style.justifyContent = 'space-between';
+        addListContainer.style.background = '#5a5a5a';
+        // addListContainer.style.borderRadius = '10px';
+        addListContainer.style.paddingLeft = '20px';
+
+        let listInput = createInput('text', 'Add your project', 'list-input');
+        styleInput(listInput);
+        addListContainer.appendChild(listInput);
+
+        let addListButton = createButton('+', 'add-list-button', () => {
+            if(listInput.value === '') { console.log("Input Invalid"); return; }
+            let listTitle = listInput.value;
+            listInput.value = '';
+            let list = listContainer.addList(listTitle);
+            this.render(listContainer, list);   
+        });
+        styleButton(addListButton);
+        addListContainer.appendChild(addListButton);
+
+        const listsDiv = document.createElement('div');
+        listsDiv.classList.add('lists-div');
+        listsDiv.style.display = 'flex';
+        listsDiv.style.flexDirection = 'column';
+        listsDiv.style.marginTop = '20px';
+        // listsDiv.style.borderBottom = '1px solid white';
+
+        const lists = listContainer.getLists();
+
+        for(let i = 0; i < lists.length; i++) {
+            const list = lists[i];
+            let listButton = createButton(list.title, 'list-button', () => {
+                this.render(listContainer, list);
+            });
+            styleListButton(listButton);
+            listsDiv.appendChild(listButton);
+        }
+
+        App.sidebar.appendChild(addListContainer);
+        App.sidebar.appendChild(listsDiv);
+    }
+};
+
