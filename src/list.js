@@ -18,6 +18,8 @@ class List {
     getListItems() { return this.listItemArray; }
 
     getTitle() { return this.title; }
+
+    setTitle(title) { this.title = title; }
 }
 
 export default List;

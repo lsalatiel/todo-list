@@ -25,7 +25,7 @@ function createInput(inputType, placeHolder, inputClass) {
 function styleSideBar() {
     App.sidebar.style.margin = '0';
     App.sidebar.style.padding = '0';
-    App.sidebar.style.width = '300px';
+    App.sidebar.style.width = '400px';
     App.sidebar.style.backgroundColor = '#2C2C2C';
     App.sidebar.style.position = 'fixed';
     App.sidebar.style.height = '100%';
@@ -33,21 +33,19 @@ function styleSideBar() {
 }
 
 function styleContent() {
-    App.content.style.marginLeft = '250px';
+    App.content.style.marginLeft = '400px';
     App.content.style.padding = '1px 16px';
     App.content.style.height = '1000px';
 }
 
 function styleListButton(listButton) {
-    listButton.style.marginBottom = '18px';
     listButton.style.backgroundColor = '#2C2C2C';
     listButton.style.color = 'white';
     listButton.style.border = 'none';
     listButton.style.cursor = 'pointer';
     listButton.style.fontSize = '22px';
     listButton.style.textAlign = 'left';
-    listButton.style.marginLeft = '5px';
-    listButton.style.borderBottom = '1px solid #757575';
+    listButton.style.padding = '15px';
 }
 
 function styleText(text, content, color, fontSize, textAlign) {
@@ -214,18 +212,67 @@ export default class View {
         listsDiv.classList.add('lists-div');
         listsDiv.style.display = 'flex';
         listsDiv.style.flexDirection = 'column';
-        listsDiv.style.marginTop = '20px';
-        // listsDiv.style.borderBottom = '1px solid white';
+        // listsDiv.style.marginTop = '1px';
 
         const lists = listContainer.getLists();
 
         for(let i = 0; i < lists.length; i++) {
+            const listDiv = document.createElement('div');
+            listDiv.classList.add('list-div');
+            listDiv.style.display = 'flex';
+            listDiv.style.flexDirection = 'row';
+
             const list = lists[i];
             let listButton = createButton(list.title, 'list-button', () => {
                 this.render(listContainer, list);
             });
             styleListButton(listButton);
-            listsDiv.appendChild(listButton);
+            listButton.style.width = '100%';
+            listButton.style.borderTop = '1px solid black';
+            listDiv.appendChild(listButton);
+
+            if(currentList !== null && currentList !== undefined && list.getTitle() === currentList.getTitle()) {
+                listButton.style.backgroundColor = '#5a5a5a';
+            }
+
+            let editListButton = createButton('E', 'edit-button', () => {
+                const input = createInput('text', '', 'edit-list-input');
+                styleInput(input);
+
+                listButton.textContent = '';
+                listButton.appendChild(input);
+
+                input.focus();
+
+                input.addEventListener('blur', () => {
+                    if(input.value !== '')
+                        list.setTitle(input.value);
+                    this.render(listContainer, list);
+                });
+
+                input.addEventListener('keypress', (e) => {
+                    if(e.key === 'Enter') {
+                        if(input.value !== '')
+                            list.setTitle(input.value);
+                        this.render(listContainer, list);
+                    }
+                });
+            });
+            styleButton(editListButton);
+            editListButton.style.borderTop = '1px solid black';
+            editListButton.style.backgroundColor = '#5d61b6';
+            listDiv.appendChild(editListButton);
+
+            let deleteListButton = createButton('X', 'delete-button', () => {
+                listContainer.removeList(list);
+                this.render(listContainer, listContainer.getLists()[0]);
+            });
+            styleButton(deleteListButton);
+            deleteListButton.style.borderTop = '1px solid black';
+            deleteListButton.style.backgroundColor = '#141414';
+            listDiv.appendChild(deleteListButton);
+
+            listsDiv.appendChild(listDiv);
         }
 
         App.sidebar.appendChild(addListContainer);
