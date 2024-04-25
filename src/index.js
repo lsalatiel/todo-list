@@ -6,4 +6,3 @@ let listContainer = new ListContainer();
 let view = new View();
 view.render(listContainer, null);
 
-console.log("Hello World!");

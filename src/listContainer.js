@@ -6,14 +6,14 @@ class ListContainer {
     }
     
     addList(title) {
+        if(this.listArray.some((item) => item.getTitle() === title)) { return 0 };
         let list = new List(title);
         this.listArray.push(list);
         return list;
     }
     
     removeList(list) {
-        // this.listArray = this.listArray.filter((item) => item !== list);
-        this.listArray.splice(list, 1);
+        this.listArray = this.listArray.filter((item) => item !== list);
     }
     
     getLists() {

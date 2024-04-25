@@ -126,6 +126,16 @@ export default class View {
         taskInput.style.textAlign = 'center';
         addTaskContainer.appendChild(taskInput);
 
+        taskInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') {
+                if(taskInput.value === '') { console.log("Input Invalid"); return; }
+                let taskTitle = taskInput.value;
+                taskInput.value = '';
+                currentList.addListItem(taskTitle, '', '', 0, 0);
+                this.render(listContainer, currentList);
+            }
+        });
+
         let addTaskButton = createButton('+', 'add-task-button', () => {
             if(taskInput.value === '') { console.log("Input Invalid"); return; }
             let taskTitle = taskInput.value;
@@ -196,6 +206,19 @@ export default class View {
 
         let listInput = createInput('text', 'Add your project', 'list-input');
         styleInput(listInput);
+        listInput.style.fontSize = '20px';
+
+        listInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') {
+                if(listInput.value === '') { console.log("Input Invalid"); return; }
+                let listTitle = listInput.value;
+                listInput.value = '';
+                let list = listContainer.addList(listTitle);
+                if(list === 0) { console.log("List already exists"); return; }
+                this.render(listContainer, list);
+            }
+        });
+
         addListContainer.appendChild(listInput);
 
         let addListButton = createButton('+', 'add-list-button', () => {
@@ -203,6 +226,7 @@ export default class View {
             let listTitle = listInput.value;
             listInput.value = '';
             let list = listContainer.addList(listTitle);
+            if(list === 0) { console.log("List already exists"); return; }
             this.render(listContainer, list);   
         });
         styleButton(addListButton);

@@ -7,6 +7,7 @@ class List {
     }
 
     addListItem(title, description, dueDate, priority, status) {
+        if(this.listItemArray.some((item) => item.getTitle() === title)) { return 0 }
         let listItem = new ListItem(title, description, dueDate, priority, status);
         this.listItemArray.push(listItem);
     }
