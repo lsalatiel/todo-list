@@ -110,7 +110,7 @@ export default class View {
         }
         
         const listTitle = document.createElement('h1');
-        styleText(listTitle, currentList.getTitle(), 'white', '45px', 'center');
+        styleText(listTitle, currentList.getTitle(), 'white', '55px', 'center');
 
         const addTaskContainer = document.createElement('div');
         addTaskContainer.style.display = 'flex';
@@ -183,9 +183,17 @@ export default class View {
             statusButtonDiv.style.width = '80px';
             statusButtonDiv.style.textAlign = 'center';
 
+            const deleteButtonDiv = document.createElement('div');
+            statusButtonDiv.style.display = 'inline-block';
+            statusButtonDiv.style.alignContent = 'center';
+            statusButtonDiv.style.height = '80px';
+            statusButtonDiv.style.width = '80px';
+            statusButtonDiv.style.textAlign = 'center';
+
             const taskTitle = document.createElement('button');
             taskTitle.textContent = task.getTitle();
             styleButton(taskTitle);
+            taskTitle.style.fontSize = '28px';
             taskTitle.style.backgroundColor = 'transparent';
             taskTitle.style.textDecoration = task.getStatus() === 0 ? 'none' : 'line-through';
             taskTitle.style.color = task.getStatus() === 0 ? 'white' : '#555';
@@ -229,11 +237,26 @@ export default class View {
             statusButton.style.height = '60px';
             statusButton.style.width = '60px';
 
+            let deleteTaskButton = createButton('-', 'delete-button', () => {
+                currentList.removeListItem(task);
+                this.render(listContainer, currentList);
+            });
+            styleButton(deleteTaskButton);
+            deleteTaskButton.style.backgroundColor = 'transparent';
+            deleteTaskButton.style.fontSize = '32px';
+            deleteTaskButton.style.color = '#dc0202';
+            // deleteTaskButton.style.borderRadius = '50%';
+            deleteTaskButton.style.height = '60px';
+            deleteTaskButton.style.width = '60px';
+            deleteTaskButton.style.marginLeft = '10px';
+
             statusButtonDiv.appendChild(statusButton);
             taskTitleDiv.appendChild(taskTitle);
+            deleteButtonDiv.appendChild(deleteTaskButton);
 
             taskDiv.appendChild(statusButtonDiv);
             taskDiv.appendChild(taskTitleDiv);
+            taskDiv.appendChild(deleteButtonDiv);
             taskContainer.appendChild(taskDiv);
         }
 

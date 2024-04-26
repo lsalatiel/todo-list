@@ -12,8 +12,8 @@ class List {
         this.listItemArray.push(listItem);
     }
 
-    removeListItem(index) {
-        this.listItemArray.splice(index, 1);
+    removeListItem(listItem) {
+        this.listItemArray = this.listItemArray.filter((item) => item !== listItem);
     }
 
     clearList() {
