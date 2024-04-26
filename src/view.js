@@ -147,6 +147,14 @@ export default class View {
         addTaskButton.style.borderRadius = '15px';
         addTaskContainer.appendChild(addTaskButton);
 
+        let clearTasksButton = createButton('clear', 'clear-tasks-button', () => {
+            currentList.clearList();
+            this.render(listContainer, currentList);
+        });
+        styleButton(clearTasksButton);
+        clearTasksButton.style.backgroundColor = 'transparent';
+        clearTasksButton.style.paddingLeft = '20px';
+
         const taskContainer = document.createElement('div');
         // taskContainer.style.flexDirection = 'column';
         // taskContainer.style.display = 'flex';
@@ -157,22 +165,58 @@ export default class View {
         for(let i = 0; i < tasks.length; i++) {
             const task = tasks[i];
             const taskDiv = document.createElement('div');
-            taskDiv.style.backgroundColor = '#2C2C2C';
-            taskDiv.style.color = 'white';
             taskDiv.style.background = 'transparent';
-            taskDiv.style.maxWidth = '500px';
-            taskDiv.style.overflow = 'hidden';
-            taskDiv.style.textOverflow = 'ellipsis';
             taskDiv.style.display = 'flex';
             taskDiv.style.marginBottom = '10px';
 
-            const taskTitle = document.createElement('h2');
-            styleText(taskTitle, task.getTitle(), 'white', '26px', 'left');
+            const taskTitleDiv = document.createElement('div');
+            taskTitleDiv.style.color = 'white';
+            taskTitleDiv.style.background = 'transparent';
+            taskTitleDiv.style.maxWidth = '500px';
+            taskTitleDiv.style.overflow = 'hidden';
+            taskTitleDiv.style.textOverflow = 'ellipsis';
+            
+            const statusButtonDiv = document.createElement('div');
+            statusButtonDiv.style.display = 'inline-block';
+            statusButtonDiv.style.alignContent = 'center';
+            statusButtonDiv.style.height = '80px';
+            statusButtonDiv.style.width = '80px';
+            statusButtonDiv.style.textAlign = 'center';
+
+            const taskTitle = document.createElement('button');
+            taskTitle.textContent = task.getTitle();
+            styleButton(taskTitle);
+            taskTitle.style.backgroundColor = 'transparent';
             taskTitle.style.textDecoration = task.getStatus() === 0 ? 'none' : 'line-through';
             taskTitle.style.color = task.getStatus() === 0 ? 'white' : '#555';
 
+            taskTitle.addEventListener('click', () => {
+                const input = createInput('text', task.getTitle(), 'edit-task-input');
+                styleInput(input);
+                input.style.padding = '0px';
+                input.style.fontSize = '24px';
+
+                taskTitle.textContent = '';
+                taskTitle.appendChild(input);
+
+                input.focus();
+
+                input.addEventListener('blur', () => {
+                    if(input.value !== '')
+                        task.setTitle(input.value);
+                    this.render(listContainer, currentList);
+                });
+
+                input.addEventListener('keypress', (e) => {
+                    if(e.key === 'Enter') {
+                        if(input.value !== '')
+                            task.setTitle(input.value);
+                        this.render(listContainer, currentList);
+                    }
+                });
+            });
+
             let status = task.getStatus() === 0 ? 'U' : 'D';
-            console.log(status);
             let statusColor = task.getStatus() === 0 ? '#de6449' : '#55b761';
             let statusButton = createButton(status, 'status-button', () => {
                 task.getStatus() === 0 ? task.setStatus(1) : task.setStatus(0);
@@ -180,18 +224,22 @@ export default class View {
             });
             styleButton(statusButton);
             statusButton.style.backgroundColor = statusColor;
-            statusButton.style.fontSize = '24px';
-            statusButton.style.borderRadius = '30px';
-            statusButton.style.padding = '0px 25px';
-            statusButton.style.marginRight = '10px';
+            statusButton.style.fontSize = '22px';
+            statusButton.style.borderRadius = '50%';
+            statusButton.style.height = '60px';
+            statusButton.style.width = '60px';
 
-            taskDiv.appendChild(statusButton);
-            taskDiv.appendChild(taskTitle);
+            statusButtonDiv.appendChild(statusButton);
+            taskTitleDiv.appendChild(taskTitle);
+
+            taskDiv.appendChild(statusButtonDiv);
+            taskDiv.appendChild(taskTitleDiv);
             taskContainer.appendChild(taskDiv);
         }
 
         App.content.appendChild(listTitle);
         App.content.appendChild(addTaskContainer);
+        App.content.appendChild(clearTasksButton);
         App.content.appendChild(taskContainer);
     }
 
@@ -260,8 +308,10 @@ export default class View {
             }
 
             let editListButton = createButton('E', 'edit-button', () => {
-                const input = createInput('text', '', 'edit-list-input');
+                const input = createInput('text', list.getTitle(), 'edit-list-input');
                 styleInput(input);
+                input.style.padding = '0px';
+                input.style.fontSize = '20px';
 
                 listButton.textContent = '';
                 listButton.appendChild(input);

@@ -16,6 +16,10 @@ class List {
         this.listItemArray.splice(index, 1);
     }
 
+    clearList() {
+        this.listItemArray = [];
+    }
+
     getListItems() { return this.listItemArray; }
 
     getTitle() { return this.title; }
