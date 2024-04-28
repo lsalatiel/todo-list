@@ -1,5 +1,3 @@
-import ListContainer from './listContainer.js';
-
 const App = {
     body: document.querySelector('body'),
     sidebar: document.querySelector('.sidebar'),
@@ -36,6 +34,9 @@ function styleContent() {
     App.content.style.marginLeft = '400px';
     App.content.style.padding = '1px 16px';
     App.content.style.height = '1000px';
+    App.content.style.display = 'flex';
+    App.content.style.flexDirection = 'column';
+    App.content.style.alignItems = 'center';
 }
 
 function styleListButton(listButton) {
@@ -71,7 +72,6 @@ function styleButton(button) {
     button.style.border = 'none';
     button.style.cursor = 'pointer';
     button.style.padding = '15px';
-    // button.style.borderRadius = '10px';
     button.style.fontSize = '24px';
 }
 
@@ -96,13 +96,11 @@ export default class View {
         styleContent();
 
         this.renderSidebar(listContainer, currentList);
-        this.renderContent(listContainer, currentList);
+        this.renderContent(listContainer, currentList, 'all');
     }
 
-    renderContent(listContainer, currentList) {
-        App.content.style.display = 'flex';
-        App.content.style.flexDirection = 'column';
-        App.content.style.alignItems = 'center';
+    renderContent(listContainer, currentList, tasksToShow) {
+        App.content.innerHTML = '';
 
         if(currentList === undefined || currentList === null) {
             createGenericContentText();
@@ -132,7 +130,7 @@ export default class View {
                 let taskTitle = taskInput.value;
                 taskInput.value = '';
                 currentList.addListItem(taskTitle, '', '', 0, 0);
-                this.render(listContainer, currentList);
+                this.renderContent(listContainer, currentList, 'all');
             }
         });
 
@@ -141,28 +139,29 @@ export default class View {
             let taskTitle = taskInput.value;
             taskInput.value = '';
             currentList.addListItem(taskTitle, '', '', 0, 0);
-            this.render(listContainer, currentList);
+            this.renderContent(listContainer, currentList, 'all');
         });
         styleButton(addTaskButton);
         addTaskButton.style.borderRadius = '15px';
         addTaskContainer.appendChild(addTaskButton);
 
-        let clearTasksButton = createButton('clear', 'clear-tasks-button', () => {
+        let clearTasksButton = createButton('Clear Tasks', 'clear-tasks-button', () => {
             currentList.clearList();
-            this.render(listContainer, currentList);
+            this.renderContent(listContainer, currentList, 'all');
         });
         styleButton(clearTasksButton);
         clearTasksButton.style.backgroundColor = 'transparent';
         clearTasksButton.style.paddingLeft = '20px';
 
         const taskContainer = document.createElement('div');
-        // taskContainer.style.flexDirection = 'column';
-        // taskContainer.style.display = 'flex';
         taskContainer.style.marginTop = '30px';
 
         const tasks = currentList.getListItems();
 
         for(let i = 0; i < tasks.length; i++) {
+            if(tasksToShow === 'completed' && tasks[i].getStatus() === 0) { continue; }
+            if(tasksToShow === 'todo' && tasks[i].getStatus() === 1) { continue; }
+
             const task = tasks[i];
             const taskDiv = document.createElement('div');
             taskDiv.style.background = 'transparent';
@@ -212,14 +211,14 @@ export default class View {
                 input.addEventListener('blur', () => {
                     if(input.value !== '')
                         task.setTitle(input.value);
-                    this.render(listContainer, currentList);
+                    this.renderContent(listContainer, currentList, tasksToShow);
                 });
 
                 input.addEventListener('keypress', (e) => {
                     if(e.key === 'Enter') {
                         if(input.value !== '')
                             task.setTitle(input.value);
-                        this.render(listContainer, currentList);
+                        this.renderContent(listContainer, currentList, tasksToShow);
                     }
                 });
             });
@@ -228,7 +227,7 @@ export default class View {
             let statusColor = task.getStatus() === 0 ? '#de6449' : '#55b761';
             let statusButton = createButton(status, 'status-button', () => {
                 task.getStatus() === 0 ? task.setStatus(1) : task.setStatus(0);
-                this.render(listContainer, currentList);
+                this.renderContent(listContainer, currentList, tasksToShow);
             });
             styleButton(statusButton);
             statusButton.style.backgroundColor = statusColor;
@@ -239,13 +238,12 @@ export default class View {
 
             let deleteTaskButton = createButton('-', 'delete-button', () => {
                 currentList.removeListItem(task);
-                this.render(listContainer, currentList);
+                this.renderContent(listContainer, currentList, tasksToShow);
             });
             styleButton(deleteTaskButton);
             deleteTaskButton.style.backgroundColor = 'transparent';
             deleteTaskButton.style.fontSize = '32px';
             deleteTaskButton.style.color = '#dc0202';
-            // deleteTaskButton.style.borderRadius = '50%';
             deleteTaskButton.style.height = '60px';
             deleteTaskButton.style.width = '60px';
             deleteTaskButton.style.marginLeft = '10px';
@@ -260,10 +258,59 @@ export default class View {
             taskContainer.appendChild(taskDiv);
         }
 
+        const visibleTasksButtonDiv = document.createElement('div');
+        visibleTasksButtonDiv.style.flexDirection = 'row';
+        visibleTasksButtonDiv.style.marginTop = '15px';
+
+        let showCompletedButton = createButton('Show Completed', 'show-completed-button', null);
+        styleButton(showCompletedButton);
+        showCompletedButton.style.marginRight = '10px';
+        
+        let hideCompletedButton = createButton('Hide Completed', 'hide-completed-button', null);
+        styleButton(hideCompletedButton);
+        hideCompletedButton.style.marginRight = '10px';
+
+        let taskType = tasksToShow;
+
+        showCompletedButton.addEventListener('click', () => {
+            if(tasksToShow === 'all' || tasksToShow === 'todo')
+                taskType = 'completed';
+            else
+                taskType = 'all';
+
+            this.renderContent(listContainer, currentList, taskType);
+        });
+
+        hideCompletedButton.addEventListener('click', () => {
+            if(tasksToShow === 'all' || tasksToShow === 'completed')
+                taskType = 'todo';
+            else
+                taskType = 'all';
+
+            this.renderContent(listContainer, currentList, taskType);
+        });
+
+        if(taskType === 'completed') {
+            showCompletedButton.style.backgroundColor = '#de6449';
+            hideCompletedButton.style.backgroundColor = '#5a5a5a';
+        }
+        else if (taskType === 'all') {
+            showCompletedButton.style.backgroundColor = '#5a5a5a';
+            hideCompletedButton.style.backgroundColor = '#5a5a5a';
+        }
+        else {
+            showCompletedButton.style.backgroundColor = '#5a5a5a';
+            hideCompletedButton.style.backgroundColor = '#de6449';
+        }
+
+        visibleTasksButtonDiv.appendChild(showCompletedButton);
+        visibleTasksButtonDiv.appendChild(hideCompletedButton);
+
         App.content.appendChild(listTitle);
         App.content.appendChild(addTaskContainer);
         App.content.appendChild(clearTasksButton);
         App.content.appendChild(taskContainer);
+        App.content.appendChild(visibleTasksButtonDiv);
     }
 
     renderSidebar(listContainer, currentList) {
@@ -272,7 +319,6 @@ export default class View {
         addListContainer.style.alignItems = 'center';
         addListContainer.style.justifyContent = 'space-between';
         addListContainer.style.background = '#5a5a5a';
-        // addListContainer.style.borderRadius = '10px';
         addListContainer.style.paddingLeft = '20px';
 
         let listInput = createInput('text', 'Add your project', 'list-input');
@@ -307,7 +353,6 @@ export default class View {
         listsDiv.classList.add('lists-div');
         listsDiv.style.display = 'flex';
         listsDiv.style.flexDirection = 'column';
-        // listsDiv.style.marginTop = '1px';
 
         const lists = listContainer.getLists();
 
